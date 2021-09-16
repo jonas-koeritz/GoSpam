@@ -121,13 +121,14 @@ func indexView() func(http.ResponseWriter, *http.Request) {
 	babbler := babble.NewBabbler()
 	babbler.Count = 1
 
-	return func(w http.ResponseWriter, r *http.Request) {
+	domain := viper.GetString("Domain")
 
+	return func(w http.ResponseWriter, r *http.Request) {
 		indexTemplate.Execute(w, struct {
 			Domain      string
 			RandomAlias string
 		}{
-			Domain:      viper.GetString("Domain"),
+			Domain:      domain,
 			RandomAlias: makeAlias(babbler.Babble()),
 		})
 	}
@@ -146,6 +147,7 @@ func emlDownload(backend *gospam.InMemoryBackend) func(http.ResponseWriter, *htt
 		}
 
 		e := backend.GetEmailById(numericId)
+
 		w.Header().Set("Content-Type", "message/rfc822")
 		w.Header().Set("Content-Disposition", "attachment; filename="+e.From+".eml")
 		w.Write(e.Data)
@@ -173,6 +175,9 @@ func mailboxView(backend *gospam.InMemoryBackend) func(w http.ResponseWriter, r 
 	babbler := babble.NewBabbler()
 	babbler.Count = 1
 
+	retentionHours := viper.GetInt("RetentionHours")
+	domain := viper.GetString("Domain")
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		aliases := r.URL.Query()["alias"]
 		alias := ""
@@ -189,8 +194,8 @@ func mailboxView(backend *gospam.InMemoryBackend) func(w http.ResponseWriter, r 
 		}{
 			Alias:          alias,
 			RandomAlias:    makeAlias(babbler.Babble()),
-			Domain:         viper.GetString("Domain"),
-			RetentionHours: viper.GetInt("RetentionHours"),
+			Domain:         domain,
+			RetentionHours: retentionHours,
 			EMails:         backend.GetEmailsByAlias(alias),
 		})
 		if err != nil {
