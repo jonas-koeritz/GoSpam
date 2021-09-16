@@ -25,7 +25,12 @@
         </div>
 
         <div class="ui center aligned container" style="margin-top: 100px;">
-            <div class="ui item message">Create a disposable email address on the fly by sending an email to any alias <b>@{{ .Domain }}</b>.</div>
+            <div class="ui item message">
+                Create a disposable email address on the fly by sending an email to any alias <b>@{{ .Domain }}</b>.
+                <div style="margin-top: 20px;">Processed <b>{{ .ProcessedEmails }}</b> emails since startup at {{ DateFormat .StartupTime }}</div>
+            </div>
+
+            
         </div>
     </body>
 </html>

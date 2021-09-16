@@ -99,3 +99,7 @@ func (b *InMemoryBackend) IsAcceptedDomain(email string) bool {
 
 	return false
 }
+
+func (b *InMemoryBackend) GetProcessedEmails() int {
+	return b.currentID
+}

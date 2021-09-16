@@ -6,4 +6,7 @@ type Backend interface {
 	smtp.Backend
 	SaveEmail(*EMail)
 	IsAcceptedDomain(email string) bool
+	GetProcessedEmails() int
+	GetEmailsByAlias(alias string) []*EMail
+	GetEmailById(id int) *EMail
 }

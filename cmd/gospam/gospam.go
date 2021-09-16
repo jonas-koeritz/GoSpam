@@ -102,12 +102,12 @@ func mailboxCleanup(ctx context.Context, backend *gospam.InMemoryBackend) {
 	}
 }
 
-func webServer(ctx context.Context, backend *gospam.InMemoryBackend) {
+func webServer(ctx context.Context, backend gospam.Backend) {
 	defer ctx.Value(contextKey("wg")).(*sync.WaitGroup).Done()
 
 	staticFiles := http.FileServer(http.FS(staticFS))
 
-	http.HandleFunc("/", indexView())
+	http.HandleFunc("/", indexView(backend))
 	http.HandleFunc("/mailbox", mailboxView(backend))
 	http.HandleFunc("/mail", emlDownload(backend))
 	http.Handle("/static/", staticFiles)
@@ -123,19 +123,32 @@ func webServer(ctx context.Context, backend *gospam.InMemoryBackend) {
 	httpServer.Shutdown(context.Background())
 }
 
-func indexView() func(http.ResponseWriter, *http.Request) {
-	indexTemplate := template.Must(template.ParseFS(templatesFS, "templates/index.html"))
+func indexView(backend gospam.Backend) func(http.ResponseWriter, *http.Request) {
+	indexTemplate, err := template.New("index.html").Funcs(template.FuncMap{
+		"DateFormat": func(date time.Time) string {
+			return date.Format(time.RFC3339)
+		},
+	}).ParseFS(templatesFS, "templates/index.html")
+	if err != nil {
+		log.Printf("Error parsing template: %s\n", err)
+	}
 
 	domain := viper.GetString("Domain")
 	aliasGenerator := aliasPlaceholderGenerator()
 
+	startupTime := time.Now()
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		indexTemplate.Execute(w, struct {
-			Domain      string
-			RandomAlias string
+			Domain          string
+			RandomAlias     string
+			ProcessedEmails int
+			StartupTime     time.Time
 		}{
-			Domain:      domain,
-			RandomAlias: aliasGenerator(),
+			Domain:          domain,
+			RandomAlias:     aliasGenerator(),
+			ProcessedEmails: backend.GetProcessedEmails(),
+			StartupTime:     startupTime,
 		})
 	}
 }
@@ -155,7 +168,7 @@ func aliasPlaceholderGenerator() func() string {
 	}
 }
 
-func emlDownload(backend *gospam.InMemoryBackend) func(http.ResponseWriter, *http.Request) {
+func emlDownload(backend gospam.Backend) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.Atoi(r.URL.Query().Get("id"))
 		if err != nil {
@@ -175,7 +188,7 @@ func emlDownload(backend *gospam.InMemoryBackend) func(http.ResponseWriter, *htt
 	}
 }
 
-func mailboxView(backend *gospam.InMemoryBackend) func(w http.ResponseWriter, r *http.Request) {
+func mailboxView(backend gospam.Backend) func(w http.ResponseWriter, r *http.Request) {
 	mailboxTemplate, err := template.New("mailbox.html").Funcs(template.FuncMap{
 		"DateFormat": func(date time.Time) string {
 			return date.Format(time.RFC3339)
