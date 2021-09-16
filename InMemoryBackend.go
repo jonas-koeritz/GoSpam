@@ -1,7 +1,6 @@
 package gospam
 
 import (
-	"log"
 	"strings"
 	"sync"
 	"time"
@@ -71,9 +70,7 @@ func (b *InMemoryBackend) GetEmailById(id uint64) *EMail {
 	return nil
 }
 
-func (b *InMemoryBackend) Cleanup(retentionHours int) {
-	deadline := time.Now().Add(time.Duration(-retentionHours) * time.Hour)
-	log.Printf("Deleting all messages received before %s\n", deadline)
+func (b *InMemoryBackend) Cleanup(deadline time.Time) {
 	unexpiredMails := make([]*EMail, 0)
 	for _, e := range b.emails {
 		if !e.Time.Before(deadline) {

@@ -1,12 +1,17 @@
 package main
 
 import (
+	"context"
 	"html/template"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
+	"syscall"
 	"time"
 
 	"github.com/emersion/go-smtp"
@@ -15,6 +20,8 @@ import (
 	"github.com/tjarratt/babble"
 )
 
+type contextKey string
+
 func main() {
 	err := readInConfig()
 	if err != nil {
@@ -22,11 +29,34 @@ func main() {
 		return
 	}
 
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+	servicesWaitGroup := &sync.WaitGroup{}
+	ctx, shutdown := context.WithCancel(context.Background())
+	serviceContext := context.WithValue(ctx, contextKey("wg"), servicesWaitGroup)
+
 	// Create an InMemoryBackend to store messages
 	backend := &gospam.InMemoryBackend{
 		MaxStoredMessage: viper.GetInt("MaxStoredMessages"),
 	}
 
+	servicesWaitGroup.Add(1)
+	go smtpServer(serviceContext, backend)
+	servicesWaitGroup.Add(1)
+	go mailboxCleanup(serviceContext, backend)
+	servicesWaitGroup.Add(1)
+	go webServer(serviceContext, backend)
+
+	<-sigs
+	log.Printf("received signal, shutting down\n")
+	shutdown()
+	log.Printf("waiting for services\n")
+	servicesWaitGroup.Wait()
+}
+
+func smtpServer(ctx context.Context, backend gospam.Backend) {
+	defer ctx.Value(contextKey("wg")).(*sync.WaitGroup).Done()
 	// Create and configure the SMTP listener
 	s := smtp.NewServer(backend)
 	s.Addr = viper.GetString("SMTPListenAddress")
@@ -38,32 +68,52 @@ func main() {
 	s.AuthDisabled = true
 	s.AllowInsecureAuth = false
 
-	// Start the cleanup background task
-	go mailboxCleanup(backend)
+	log.Printf("starting SMTP server at %s\n", s.Addr)
+	go s.ListenAndServe()
 
-	go func() {
-		log.Printf("Starting Mailserver at %s\n", s.Addr)
-		if err := s.ListenAndServe(); err != nil {
-			log.Printf("Error: %s\n", err)
-			return
-		}
-	}()
-	defer s.Close()
-
-	webServer(backend)
+	<-ctx.Done()
+	log.Printf("shutting down SMTP server\n")
+	s.Close()
 }
 
-func webServer(backend *gospam.InMemoryBackend) {
-	mux := http.NewServeMux()
+func mailboxCleanup(ctx context.Context, backend *gospam.InMemoryBackend) {
+	defer ctx.Value(contextKey("wg")).(*sync.WaitGroup).Done()
+
+	cleanupInterval := time.NewTicker(time.Duration(viper.GetInt("CleanupPeriod")) * time.Minute)
+	retentionHours := viper.GetInt("RetentionHours")
+	log.Printf("starting periodic cleanup task\n")
+	for {
+		select {
+		case <-cleanupInterval.C:
+			deadline := time.Now().Add(time.Duration(-retentionHours) * time.Hour)
+			log.Printf("deleting all messages received before %s\n", deadline)
+			backend.Cleanup(deadline)
+		case <-ctx.Done():
+			log.Printf("shutting down cleanup task")
+			return
+		}
+	}
+}
+
+func webServer(ctx context.Context, backend *gospam.InMemoryBackend) {
+	defer ctx.Value(contextKey("wg")).(*sync.WaitGroup).Done()
+
 	staticFiles := http.FileServer(http.Dir("./static/"))
 
-	mux.HandleFunc("/", indexView())
-	mux.HandleFunc("/mailbox", mailboxView(backend))
-	mux.HandleFunc("/mail", emlDownload(backend))
-	mux.Handle("/static/", http.StripPrefix("/static", staticFiles))
+	http.HandleFunc("/", indexView())
+	http.HandleFunc("/mailbox", mailboxView(backend))
+	http.HandleFunc("/mail", emlDownload(backend))
+	http.Handle("/static/", http.StripPrefix("/static", staticFiles))
 
-	log.Printf("Web interface listening at %s\n", viper.GetString("HTTPListenAddress"))
-	http.ListenAndServe(viper.GetString("HTTPListenAddress"), mux)
+	httpListenAddress := viper.GetString("HTTPListenAddress")
+
+	log.Printf("starting web interface at %s\n", httpListenAddress)
+	httpServer := &http.Server{Addr: httpListenAddress}
+
+	go httpServer.ListenAndServe()
+	<-ctx.Done()
+	log.Printf("shutting down web interface\n")
+	httpServer.Shutdown(context.Background())
 }
 
 func indexView() func(http.ResponseWriter, *http.Request) {
@@ -99,13 +149,6 @@ func emlDownload(backend *gospam.InMemoryBackend) func(http.ResponseWriter, *htt
 		w.Header().Set("Content-Type", "message/rfc822")
 		w.Header().Set("Content-Disposition", "attachment; filename="+e.From+".eml")
 		w.Write(e.Data)
-	}
-}
-
-func mailboxCleanup(backend *gospam.InMemoryBackend) {
-	for {
-		time.Sleep(time.Duration(viper.GetInt("CleanupPeriod")) * time.Minute)
-		backend.Cleanup(viper.GetInt("RetentionHours"))
 	}
 }
 
