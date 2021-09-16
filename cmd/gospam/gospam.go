@@ -169,9 +169,6 @@ func mailboxView(backend *gospam.InMemoryBackend) func(w http.ResponseWriter, r 
 		"Join": func(elements []string) string {
 			return strings.Join(elements, ", ")
 		},
-		"Sanitize": func(data []byte) string {
-			return template.HTMLEscapeString(string(data))
-		},
 		"ShowMail": showMail,
 	}).ParseFS(templatesFS, "templates/mailbox.html")
 
