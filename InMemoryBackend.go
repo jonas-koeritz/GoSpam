@@ -9,7 +9,7 @@ import (
 )
 
 type InMemoryBackend struct {
-	currentID        uint64
+	currentID        int
 	emails           []*EMail
 	MaxStoredMessage int
 	mailMutex        sync.Mutex
@@ -61,7 +61,7 @@ func (b *InMemoryBackend) GetEmailsByAlias(alias string) []*EMail {
 	return emails
 }
 
-func (b *InMemoryBackend) GetEmailById(id uint64) *EMail {
+func (b *InMemoryBackend) GetEmailById(id int) *EMail {
 	for _, e := range b.emails {
 		if e.ID == id {
 			return e

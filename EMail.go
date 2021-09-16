@@ -6,7 +6,7 @@ import (
 )
 
 type EMail struct {
-	ID      uint64
+	ID      int
 	Time    time.Time
 	From    string
 	To      []string

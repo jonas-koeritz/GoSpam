@@ -47,11 +47,9 @@ func main() {
 		MaxStoredMessage: viper.GetInt("MaxStoredMessages"),
 	}
 
-	servicesWaitGroup.Add(1)
+	servicesWaitGroup.Add(3)
 	go smtpServer(serviceContext, backend)
-	servicesWaitGroup.Add(1)
 	go mailboxCleanup(serviceContext, backend)
-	servicesWaitGroup.Add(1)
 	go webServer(serviceContext, backend)
 
 	<-sigs
@@ -71,6 +69,8 @@ func smtpServer(ctx context.Context, backend gospam.Backend) {
 	s.WriteTimeout = time.Duration(viper.GetInt("SMTPTimeout")) * time.Second
 	s.MaxMessageBytes = viper.GetInt("MaximumMessageSize")
 	s.MaxRecipients = viper.GetInt("MaxRecipients")
+
+	// no authentication required to deliver email
 	s.AuthDisabled = true
 	s.AllowInsecureAuth = false
 
@@ -143,18 +143,17 @@ func indexView() func(http.ResponseWriter, *http.Request) {
 
 func emlDownload(backend *gospam.InMemoryBackend) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		ids := r.URL.Query()["id"]
-		id := ""
-		if len(ids) > 0 {
-			id = ids[0]
-		}
-		numericId, err := strconv.ParseUint(id, 10, 64)
+		id, err := strconv.Atoi(r.URL.Query().Get("id"))
 		if err != nil {
-			w.WriteHeader(404)
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
-		e := backend.GetEmailById(numericId)
+		e := backend.GetEmailById(id)
+		if e == nil {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
 
 		w.Header().Set("Content-Type", "message/rfc822")
 		w.Header().Set("Content-Disposition", "attachment; filename="+e.From+".eml")
