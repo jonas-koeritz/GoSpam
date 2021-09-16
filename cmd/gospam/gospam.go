@@ -28,12 +28,12 @@ func main() {
 
 	s.Addr = viper.GetString("SMTPListenAddress")
 	s.Domain = viper.GetString("Domain")
-	s.ReadTimeout = 60 * time.Second
+	s.ReadTimeout = time.Duration(viper.GetInt("SMTPTimeout")) * time.Second
+	s.WriteTimeout = time.Duration(viper.GetInt("SMTPTimeout")) * time.Second
+	s.MaxMessageBytes = viper.GetInt("MaximumMessageSize")
+	s.MaxRecipients = viper.GetInt("MaxRecipients")
 	s.AuthDisabled = true
-	s.WriteTimeout = 60 * time.Second
-	s.MaxMessageBytes = 5 * 1024 * 1024 // 5 MiB
-	s.MaxRecipients = 10
-	s.AllowInsecureAuth = true
+	s.AllowInsecureAuth = false
 
 	go mailboxCleanup(backend)
 
@@ -172,6 +172,9 @@ func readInConfig() error {
 	viper.SetDefault("MaxStoredMessages", 100000)
 	viper.SetDefault("CleanupPeriod", 5)
 	viper.SetDefault("RetentionHours", 4)
+	viper.SetDefault("MaximumMessageSize", 5*1024*1024)
+	viper.SetDefault("SMTPTimeout", 60)
+	viper.SetDefault("MaxRecipients", 10)
 
 	return viper.ReadInConfig()
 }
