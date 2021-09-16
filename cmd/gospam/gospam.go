@@ -32,8 +32,7 @@ var templatesFS embed.FS
 func main() {
 	err := readInConfig()
 	if err != nil {
-		log.Printf("Error reading config: %s\n", err)
-		return
+		log.Printf("no config file, using defaults (%s)\n", err)
 	}
 
 	sigs := make(chan os.Signal, 1)
