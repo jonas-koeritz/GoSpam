@@ -3,55 +3,74 @@
     <head>
         <title>{{ .Alias }}@{{ .Domain }} | GoSpam</title>
         <link rel="stylesheet" type="text/css" href="./static/semantic.min.css">
+        <link rel="stylesheet" type="text/css" href="./static/mailbox.css">
+
         <script src="./static/jQuery.min.js"></script>
         <script src="./static/semantic.min.js"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     </head>
     <body>
-        <div class="ui centered stackable grid">
-            <div class="ui sixteen wide column" style="margin-top: 100px;">
-                <div>
-                    <h1 class="ui centered aligned header" style="margin-bottom: 5px;"><a href="/">GoSpam</a></h1>
-                    <h2 class="ui sub header centered" style="margin-top: 0;">simple throw-away e-mail</h2>
-                </div>
-            </div>
-            <div class="ui five wide column">&nbsp;</div>
-            <div class="ui message center aligned six wide column">E-Mail messages will be deleted after {{ .RetentionHours }} hours.</div>
-            <div class="ui five wide column">&nbsp;</div>
-            <div class="ui container">
-                <div class="ui grid container middle aligned">
-                    <div class="column middle aligned"><i class="envelope icon"></i></div>
-                    <div class="ui item four wide column left aligned"><b>Date and Time</b></div>
-                    <div class="ui item four wide column left aligned"><b>Envelope Sender</b></div>
-                    <div class="ui item three wide column left aligned"><b>Recipients</b></div>
-                    <div class="ui item three wide column left aligned"><b>Subject</b></div>
-                </div>
-                <div class="ui accordion item segment">
-                    {{ range .EMails }}
-                    <div class="title">
-                        <div class="ui grid middle aligned">
-                            <div class="column middle aligned"><i class="dropdown icon"></i></div>
-                            <div class="ui item four wide column left aligned">{{ DateFormat .Time }}</div>
-                            <div class="ui item four wide column left aligned">{{ .From }}</div>
-                            <div class="ui item three wide column left aligned">{{ Join .To }}</div>
-                            <div class="ui item three wide column left aligned"><b>{{ .Subject }}</b></div>
-                        </div>
-                    </div>
-                    <div class="ui content">
-                        <pre class="ui secondary segment left aligned" style="font-family: monospace;">{{ ShowMail . }}</pre>
-                        <a class="ui button" href="/mail?id={{ .ID }}">Download .eml</a>
-                    </div>
-                    {{ end }}
-                </div>
-            </div>
+        <div class="ui center aligned header">
+            <h1 style="margin-bottom: 5px; margin-top: 100px;"><a href="/">GoSpam</a></h1>
+            <h4 style="margin-top: 0; text-transform: uppercase;">simple throw-away e-mail</h4>
+        </div>
 
-            <form class="centered row" method="GET" action="/mailbox" style="margin-top: 50px;">
+        <div class="ui center aligned container" style="margin-top: 50px;">
+            <form method="GET" action="/mailbox">
                 <div class="ui item action input labeled input">
-                    <label for="alias" class="ui label">Show mailbox for alias</label>
+                    <label for="alias" class="ui label">Show mailbox</label>
                     <input type="text" name="alias" id="alias" style="text-align: right;" placeholder="{{ .RandomAlias }}">
                     <button type="submit" class="ui button">@{{ .Domain }}</button>
                 </div>
             </form>
         </div>
+
+        <div class="ui container" style="margin-top: 50px;">
+            <table class="ui striped compact table">
+                <thead>
+                    <tr>
+                        <th><i class="envelope icon"></i></th>
+                        <th>Received</th>
+                        <th>Envelope Sender</th>
+                        <th>Subject</th>
+                        <th>Envelope Recipients</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ range .EMails }}
+                    <tr class="accordion title">
+                        <td><i class="caret right icon"></i></td>
+                        <td>{{ DateFormat .Time }}</td>
+                        <td>{{ .From }}</td>
+                        <td>{{ .Subject }}</td>
+                        <td>{{ Join .To }}</td>
+                    </tr>
+                    <tr class="accordion content">
+                        <td colspan="5">
+                            <div class="ui left aligned accordion content">
+                                <pre class="ui secondary segment" style="font-family: monospace;">{{ ShowMail . }}</pre>
+                                <div class="ui right aligned">
+                                    <a class="ui basic labeled icon button" href="/mail?id={{ .ID }}">
+                                        <i class="download icon"></i>
+                                        .eml
+                                    </a>
+                                </div>
+                            </div>                            
+                        </td>
+                    </tr>
+                    {{ end }}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="ui center aligned container" style="margin-top: 50px;">
+            <div class="ui item message">E-Mail messages will be deleted after <b>{{ .RetentionHours }}</b> hours.</div>
+        </div>
+       
+
+        
+
+        
         <script src="./static/mailbox.js"></script>
     </body>
 </html>

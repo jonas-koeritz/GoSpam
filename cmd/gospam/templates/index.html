@@ -5,24 +5,26 @@
         <link rel="stylesheet" type="text/css" href="./static/semantic.min.css">
         <script src="./static/jQuery.min.js"></script>
         <script src="./static/semantic.min.js"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     </head>
     <body>
-        <div class="ui centered stackable grid">
-            <div class="ui sixteen wide column" style="margin-top: 100px;">
-                <div>
-                    <h1 class="ui centered aligned header" style="margin-bottom: 5px;"><a href="/">GoSpam</a></h1>
-                    <h2 class="ui sub header centered" style="margin-top: 0;">simple throw-away e-mail</h2>
-                </div>
-            </div>
-            <div class="ui item message">Create a disposable E-Mail address on the fly by sending an E-Mail to any alias <b>@{{ .Domain }}</b>.</div>
+        <div class="ui center aligned header">
+            <h1 style="margin-bottom: 5px; margin-top: 100px;"><a href="/">GoSpam</a></h1>
+            <h4 style="margin-top: 0; text-transform: uppercase;">simple throw-away e-mail</h4>
+        </div>
 
-            <form class="centered row" method="GET" action="/mailbox" style="margin-top: 50px;">
+        <div class="ui center aligned container" style="margin-top: 50px;">
+            <form method="GET" action="/mailbox">
                 <div class="ui item action input labeled input">
-                    <label for="alias" class="ui label">Show mailbox for alias</label>
+                    <label for="alias" class="ui label">Show mailbox</label>
                     <input type="text" name="alias" id="alias" style="text-align: right;" placeholder="{{ .RandomAlias }}">
                     <button type="submit" class="ui button">@{{ .Domain }}</button>
                 </div>
             </form>
+        </div>
+
+        <div class="ui center aligned container" style="margin-top: 100px;">
+            <div class="ui item message">Create a disposable email address on the fly by sending an email to any alias <b>@{{ .Domain }}</b>.</div>
         </div>
     </body>
 </html>

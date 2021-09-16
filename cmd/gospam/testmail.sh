@@ -1,7 +1,7 @@
 nc -C 127.0.0.1 1025 <<EOF
 EHLO localhost
-MAIL FROM:<jonas.koeritz@gmail.com>
-RCPT TO:<yule@spam4.dt-sec.net>
+MAIL FROM:<jonas.koeritz+longemailaddress@gmail.com>
+RCPT TO:<yulemeyerolbersleben@spam4.dt-sec.net>
 DATA
 Return-Path: <heinz-gustav@post.rwth-aachen.example>
 Received: from mx3.gmx.example (qmailr@mx3.gmx.example [195.63.104.129])
@@ -26,7 +26,7 @@ To: Karl-Heinz Schmitt <karl-heinz@gmx.example>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: quoted-printable
-Subject: Re: Hallo Nachbar!
+Subject: Super long subject that might break the table layoutcompletely lol.
 References: <529471993@ancalagon.rhein-neckar.de>
 Reply-To: hinz@provider.example
 X-Resent-By: Global Message Exchange <forwarder@gmx.example>

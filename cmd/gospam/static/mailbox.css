@@ -1,0 +1,20 @@
+.accordion.title {
+    cursor: pointer;
+}
+
+.accordion.title .icon {
+    transition: all 600ms;
+    transform-origin: 50% 70%;
+}
+
+.accordion.title .icon.expanded {
+    transform: rotate(90deg);
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    -o-transform: rotate(90deg);
+    -ms-transform: rotate(90deg);
+}
+
+table.ui tr td:nth-child(2) {
+    white-space: nowrap;
+}
