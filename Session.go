@@ -12,7 +12,7 @@ import (
 )
 
 type Session struct {
-	backend *Backend
+	backend Backend
 	from    string
 	to      []string
 }
@@ -48,7 +48,7 @@ func (s *Session) Data(r io.Reader) error {
 		if err != nil {
 			return err
 		}
-		s.backend.Email(&EMail{
+		s.backend.SaveEmail(&EMail{
 			Time:    time.Now(),
 			From:    s.from,
 			To:      s.to,

@@ -21,11 +21,14 @@ func main() {
 		log.Printf("Error reading config: %s\n", err)
 		return
 	}
-	backend := &gospam.Backend{
+
+	// Create an InMemoryBackend to store messages
+	backend := &gospam.InMemoryBackend{
 		MaxStoredMessage: viper.GetInt("MaxStoredMessages"),
 	}
-	s := smtp.NewServer(backend)
 
+	// Create and configure the SMTP listener
+	s := smtp.NewServer(backend)
 	s.Addr = viper.GetString("SMTPListenAddress")
 	s.Domain = viper.GetString("Domain")
 	s.ReadTimeout = time.Duration(viper.GetInt("SMTPTimeout")) * time.Second
@@ -35,6 +38,7 @@ func main() {
 	s.AuthDisabled = true
 	s.AllowInsecureAuth = false
 
+	// Start the cleanup background task
 	go mailboxCleanup(backend)
 
 	go func() {
@@ -49,7 +53,7 @@ func main() {
 	webServer(backend)
 }
 
-func webServer(backend *gospam.Backend) {
+func webServer(backend *gospam.InMemoryBackend) {
 	mux := http.NewServeMux()
 	staticFiles := http.FileServer(http.Dir("./static/"))
 
@@ -79,7 +83,7 @@ func indexView() func(http.ResponseWriter, *http.Request) {
 	}
 }
 
-func emlDownload(backend *gospam.Backend) func(http.ResponseWriter, *http.Request) {
+func emlDownload(backend *gospam.InMemoryBackend) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ids := r.URL.Query()["id"]
 		id := ""
@@ -98,14 +102,14 @@ func emlDownload(backend *gospam.Backend) func(http.ResponseWriter, *http.Reques
 	}
 }
 
-func mailboxCleanup(backend *gospam.Backend) {
+func mailboxCleanup(backend *gospam.InMemoryBackend) {
 	for {
 		time.Sleep(time.Duration(viper.GetInt("CleanupPeriod")) * time.Minute)
 		backend.Cleanup(viper.GetInt("RetentionHours"))
 	}
 }
 
-func mailboxView(backend *gospam.Backend) func(w http.ResponseWriter, r *http.Request) {
+func mailboxView(backend *gospam.InMemoryBackend) func(w http.ResponseWriter, r *http.Request) {
 	mailboxTemplate, err := template.New("mailbox.html").Funcs(template.FuncMap{
 		"DateFormat": func(date time.Time) string {
 			return date.Format(time.RFC3339)
