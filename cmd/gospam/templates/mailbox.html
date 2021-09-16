@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{{ .Alias }}@{{ .Domain }} | GoSpam</title>
+        <link rel="stylesheet" type="text/css" href="./static/semantic.min.css">
+        <script src="./static/jQuery.min.js"></script>
+        <script src="./static/semantic.min.js"></script>
+    </head>
+    <body>
+        <div class="ui centered stackable grid">
+            <div class="ui sixteen wide column" style="margin-top: 100px;">
+                <div>
+                    <h1 class="ui centered aligned header" style="margin-bottom: 5px;"><a href="/">GoSpam</a></h1>
+                    <h2 class="ui sub header centered" style="margin-top: 0;">simple throw-away e-mail</h2>
+                </div>
+            </div>
+            <div class="ui five wide column">&nbsp;</div>
+            <div class="ui message center aligned six wide column">E-Mail messages will be deleted after {{ .RetentionHours }} hours.</div>
+            <div class="ui five wide column">&nbsp;</div>
+            <div class="ui container">
+                <div class="ui grid container middle aligned">
+                    <div class="column middle aligned"><i class="envelope icon"></i></div>
+                    <div class="ui item four wide column left aligned"><b>Date and Time</b></div>
+                    <div class="ui item four wide column left aligned"><b>Envelope Sender</b></div>
+                    <div class="ui item three wide column left aligned"><b>Recipients</b></div>
+                    <div class="ui item three wide column left aligned"><b>Subject</b></div>
+                </div>
+                <div class="ui accordion item segment">
+                    {{ range .EMails }}
+                    <div class="title">
+                        <div class="ui grid middle aligned">
+                            <div class="column middle aligned"><i class="dropdown icon"></i></div>
+                            <div class="ui item four wide column left aligned">{{ DateFormat .Time }}</div>
+                            <div class="ui item four wide column left aligned">{{ .From }}</div>
+                            <div class="ui item three wide column left aligned">{{ Join .To }}</div>
+                            <div class="ui item three wide column left aligned"><b>{{ .Subject }}</b></div>
+                        </div>
+                    </div>
+                    <div class="ui content">
+                        <pre class="ui secondary segment left aligned" style="font-family: monospace;">{{ ShowMail . }}</pre>
+                        <a class="ui button" href="/mail?id={{ .ID }}">Download .eml</a>
+                    </div>
+                    {{ end }}
+                </div>
+            </div>
+
+            <form class="centered row" method="GET" action="/mailbox" style="margin-top: 50px;">
+                <div class="ui item action input labeled input">
+                    <label for="alias" class="ui label">Show mailbox for alias</label>
+                    <input type="text" name="alias" id="alias" style="text-align: right;" placeholder="{{ .RandomAlias }}">
+                    <button type="submit" class="ui button">@{{ .Domain }}</button>
+                </div>
+            </form>
+        </div>
+        <script src="./static/mailbox.js"></script>
+    </body>
+</html>
