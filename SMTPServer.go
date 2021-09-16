@@ -29,10 +29,7 @@ func (backend *Backend) AnonymousLogin(_ *smtp.ConnectionState) (smtp.Session, e
 }
 
 func (backend *Backend) Login(_ *smtp.ConnectionState, username, password string) (smtp.Session, error) {
-	return &Session{
-		authUsername: username,
-		authPassword: password,
-	}, nil
+	return nil, smtp.ErrAuthUnsupported
 }
 
 func (b *Backend) Email(email *EMail) {

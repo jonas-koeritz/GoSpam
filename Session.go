@@ -12,17 +12,13 @@ import (
 )
 
 type Session struct {
-	backend      *Backend
-	authUsername string
-	authPassword string
-	from         string
-	to           []string
+	backend *Backend
+	from    string
+	to      []string
 }
 
 func (s *Session) AuthPlain(username, password string) error {
-	s.authUsername = username
-	s.authPassword = password
-	return nil
+	return smtp.ErrAuthUnsupported
 }
 
 func (s *Session) Mail(from string, opts smtp.MailOptions) error {

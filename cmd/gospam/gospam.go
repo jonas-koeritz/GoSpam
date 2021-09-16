@@ -29,6 +29,7 @@ func main() {
 	s.Addr = viper.GetString("SMTPListenAddress")
 	s.Domain = viper.GetString("Domain")
 	s.ReadTimeout = 60 * time.Second
+	s.AuthDisabled = true
 	s.WriteTimeout = 60 * time.Second
 	s.MaxMessageBytes = 5 * 1024 * 1024 // 5 MiB
 	s.MaxRecipients = 10
