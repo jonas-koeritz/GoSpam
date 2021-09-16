@@ -13,6 +13,7 @@ type InMemoryBackend struct {
 	emails           []*EMail
 	MaxStoredMessage int
 	mailMutex        sync.Mutex
+	AcceptedDomains  []string
 }
 
 func (backend *InMemoryBackend) NewSession(_ smtp.ConnectionState, _ string) (smtp.Session, error) {
@@ -80,4 +81,21 @@ func (b *InMemoryBackend) Cleanup(deadline time.Time) {
 	b.mailMutex.Lock()
 	b.emails = unexpiredMails
 	b.mailMutex.Unlock()
+}
+
+func (b *InMemoryBackend) IsAcceptedDomain(email string) bool {
+	if len(b.AcceptedDomains) == 0 {
+		return true
+	}
+
+	emailParts := strings.Split(email, "@")
+	domain := emailParts[len(emailParts)-1]
+
+	for _, d := range b.AcceptedDomains {
+		if strings.EqualFold(d, domain) {
+			return true
+		}
+	}
+
+	return false
 }

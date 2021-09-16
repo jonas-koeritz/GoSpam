@@ -45,6 +45,7 @@ func main() {
 	// Create an InMemoryBackend to store messages
 	backend := &gospam.InMemoryBackend{
 		MaxStoredMessage: viper.GetInt("MaxStoredMessages"),
+		AcceptedDomains:  viper.GetStringSlice("AcceptedDomains"),
 	}
 
 	servicesWaitGroup.Add(3)
@@ -227,9 +228,9 @@ func showMail(email *gospam.EMail) string {
 func readInConfig() error {
 	viper.SetConfigName("gospam.conf")
 	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
 	viper.AddConfigPath("/etc/gospam")
 	viper.AddConfigPath("$HOME/.gospam")
-	viper.AddConfigPath(".")
 
 	viper.SetDefault("SMTPListenAddress", ":25")
 	viper.SetDefault("HTTPListenAddress", ":80")
@@ -241,6 +242,7 @@ func readInConfig() error {
 	viper.SetDefault("SMTPTimeout", 60)
 	viper.SetDefault("MaxRecipients", 10)
 	viper.SetDefault("RandomAliasPlaceholder", false)
+	viper.SetDefault("AcceptedDomains", []string{})
 
 	return viper.ReadInConfig()
 }

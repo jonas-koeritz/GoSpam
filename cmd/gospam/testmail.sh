@@ -1,7 +1,7 @@
 nc -C 127.0.0.1 1025 <<EOF
 EHLO localhost
-MAIL FROM:<jonas.koeritz+longemailaddress@gmail.com>
-RCPT TO:<yulemeyerolbersleben@spam4.dt-sec.net>
+MAIL FROM:<jonas.koeritz@gmail.com>
+RCPT TO:<test@localhost>
 DATA
 Return-Path: <heinz-gustav@post.rwth-aachen.example>
 Received: from mx3.gmx.example (qmailr@mx3.gmx.example [195.63.104.129])

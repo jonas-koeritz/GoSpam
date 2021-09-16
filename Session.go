@@ -29,10 +29,19 @@ func (s *Session) Mail(from string, opts smtp.MailOptions) error {
 
 func (s *Session) Rcpt(to string) error {
 	log.Printf("Mail to: %s\n", to)
+	if !s.backend.IsAcceptedDomain(to) {
+		log.Printf("not in AcceptedDomains\n")
+		return &smtp.SMTPError{
+			Code:         550,
+			EnhancedCode: smtp.EnhancedCode{5, 1, 1},
+			Message:      "Invalid recipient",
+		}
+	}
 	if s.to == nil {
 		s.to = make([]string, 0)
 	}
 	s.to = append(s.to, to)
+
 	return nil
 }
 
