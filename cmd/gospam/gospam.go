@@ -195,10 +195,10 @@ func mailboxView(backend *gospam.InMemoryBackend) func(w http.ResponseWriter, r 
 	domain := viper.GetString("Domain")
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		aliases := r.URL.Query()["alias"]
-		alias := ""
-		if len(aliases) > 0 {
-			alias = aliases[0]
+		alias := r.URL.Query().Get("alias")
+		if len(alias) == 0 {
+			http.Redirect(w, r, "/", http.StatusFound)
+			return
 		}
 
 		err := mailboxTemplate.Execute(w, struct {
