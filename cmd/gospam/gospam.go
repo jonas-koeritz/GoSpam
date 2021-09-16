@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"embed"
 	"html/template"
 	"log"
 	"net/http"
@@ -21,6 +22,12 @@ import (
 )
 
 type contextKey string
+
+//go:embed static
+var staticFS embed.FS
+
+//go:embed templates
+var templatesFS embed.FS
 
 func main() {
 	err := readInConfig()
@@ -98,12 +105,12 @@ func mailboxCleanup(ctx context.Context, backend *gospam.InMemoryBackend) {
 func webServer(ctx context.Context, backend *gospam.InMemoryBackend) {
 	defer ctx.Value(contextKey("wg")).(*sync.WaitGroup).Done()
 
-	staticFiles := http.FileServer(http.Dir("./static/"))
+	staticFiles := http.FileServer(http.FS(staticFS))
 
 	http.HandleFunc("/", indexView())
 	http.HandleFunc("/mailbox", mailboxView(backend))
 	http.HandleFunc("/mail", emlDownload(backend))
-	http.Handle("/static/", http.StripPrefix("/static", staticFiles))
+	http.Handle("/static/", staticFiles)
 
 	httpListenAddress := viper.GetString("HTTPListenAddress")
 
@@ -117,7 +124,8 @@ func webServer(ctx context.Context, backend *gospam.InMemoryBackend) {
 }
 
 func indexView() func(http.ResponseWriter, *http.Request) {
-	indexTemplate := template.Must(template.ParseFiles("./templates/index.html"))
+	indexTemplate := template.Must(template.ParseFS(templatesFS, "templates/index.html"))
+
 	babbler := babble.NewBabbler()
 	babbler.Count = 1
 
@@ -144,6 +152,7 @@ func emlDownload(backend *gospam.InMemoryBackend) func(http.ResponseWriter, *htt
 		numericId, err := strconv.ParseUint(id, 10, 64)
 		if err != nil {
 			w.WriteHeader(404)
+			return
 		}
 
 		e := backend.GetEmailById(numericId)
@@ -166,7 +175,7 @@ func mailboxView(backend *gospam.InMemoryBackend) func(w http.ResponseWriter, r 
 			return template.HTMLEscapeString(string(data))
 		},
 		"ShowMail": showMail,
-	}).ParseFiles("./templates/mailbox.html")
+	}).ParseFS(templatesFS, "templates/mailbox.html")
 
 	if err != nil {
 		log.Printf("Error parsing template: %s\n", err)
