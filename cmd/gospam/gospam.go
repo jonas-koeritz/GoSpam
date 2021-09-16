@@ -125,10 +125,8 @@ func webServer(ctx context.Context, backend *gospam.InMemoryBackend) {
 func indexView() func(http.ResponseWriter, *http.Request) {
 	indexTemplate := template.Must(template.ParseFS(templatesFS, "templates/index.html"))
 
-	babbler := babble.NewBabbler()
-	babbler.Count = 1
-
 	domain := viper.GetString("Domain")
+	aliasGenerator := aliasPlaceholderGenerator()
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		indexTemplate.Execute(w, struct {
@@ -136,8 +134,23 @@ func indexView() func(http.ResponseWriter, *http.Request) {
 			RandomAlias string
 		}{
 			Domain:      domain,
-			RandomAlias: makeAlias(babbler.Babble()),
+			RandomAlias: aliasGenerator(),
 		})
+	}
+}
+
+func aliasPlaceholderGenerator() func() string {
+	if viper.GetBool("RandomAliasPlaceholder") {
+		babbler := babble.NewBabbler()
+		babbler.Count = 1
+		aliasChars := regexp.MustCompile("[^a-zA-Z0-9]")
+		return func() string {
+			return strings.ToLower(aliasChars.ReplaceAllString(babbler.Babble(), ""))
+		}
+	} else {
+		return func() string {
+			return "alias"
+		}
 	}
 }
 
@@ -176,8 +189,7 @@ func mailboxView(backend *gospam.InMemoryBackend) func(w http.ResponseWriter, r 
 		log.Printf("Error parsing template: %s\n", err)
 	}
 
-	babbler := babble.NewBabbler()
-	babbler.Count = 1
+	aliasGenerator := aliasPlaceholderGenerator()
 
 	retentionHours := viper.GetInt("RetentionHours")
 	domain := viper.GetString("Domain")
@@ -197,7 +209,7 @@ func mailboxView(backend *gospam.InMemoryBackend) func(w http.ResponseWriter, r 
 			EMails         []*gospam.EMail
 		}{
 			Alias:          alias,
-			RandomAlias:    makeAlias(babbler.Babble()),
+			RandomAlias:    aliasGenerator(),
 			Domain:         domain,
 			RetentionHours: retentionHours,
 			EMails:         backend.GetEmailsByAlias(alias),
@@ -210,11 +222,6 @@ func mailboxView(backend *gospam.InMemoryBackend) func(w http.ResponseWriter, r 
 
 func showMail(email *gospam.EMail) string {
 	return string(email.Data)
-}
-
-func makeAlias(candidate string) string {
-	aliasChars := regexp.MustCompile("[^a-zA-Z0-9]")
-	return strings.ToLower(aliasChars.ReplaceAllString(candidate, ""))
 }
 
 func readInConfig() error {
@@ -233,6 +240,7 @@ func readInConfig() error {
 	viper.SetDefault("MaximumMessageSize", 5*1024*1024)
 	viper.SetDefault("SMTPTimeout", 60)
 	viper.SetDefault("MaxRecipients", 10)
+	viper.SetDefault("RandomAliasPlaceholder", false)
 
 	return viper.ReadInConfig()
 }
