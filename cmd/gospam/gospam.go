@@ -225,6 +225,8 @@ func readInConfig() error {
 	viper.AddConfigPath(".")
 
 	viper.SetDefault("SMTPListenAddress", ":25")
+	viper.SetDefault("HTTPListenAddress", ":80")
+	viper.SetDefault("Domain", "localhost")
 	viper.SetDefault("MaxStoredMessages", 100000)
 	viper.SetDefault("CleanupPeriod", 5)
 	viper.SetDefault("RetentionHours", 4)
