@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"mime"
 	"net/mail"
 	"time"
 
@@ -57,6 +58,13 @@ func (s *Session) Data(r io.Reader) error {
 		if err != nil {
 			return err
 		}
+
+		mimeDecoder := new(mime.WordDecoder)
+		subject, err := mimeDecoder.Decode(parsedMail.Header.Get("Subject"))
+		if err != nil {
+			subject = parsedMail.Header.Get("Subject")
+		}
+
 		s.backend.SaveEmail(&EMail{
 			Time:    time.Now(),
 			From:    s.from,
@@ -64,7 +72,7 @@ func (s *Session) Data(r io.Reader) error {
 			Header:  parsedMail.Header,
 			Body:    b,
 			Data:    m,
-			Subject: parsedMail.Header.Get("Subject"),
+			Subject: subject,
 		})
 		log.Printf("Saved E-Mail Message with %d bytes of body data\n", len(b))
 	}

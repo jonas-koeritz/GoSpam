@@ -35,6 +35,9 @@ RedisBackend:
   DB: 0
 ```
 
+The `MaxStoredMessages` does not apply to the redis backend. Additionally searching for aliases using `*` and `?` placeholders 
+is available only when using the redis backend.
+
 ## Setup
 
 Just run the `gospam` binary.

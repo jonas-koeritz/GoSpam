@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -82,6 +83,7 @@ func smtpServer(ctx context.Context, backend gospam.Backend) {
 	s.WriteTimeout = time.Duration(viper.GetInt("SMTPTimeout")) * time.Second
 	s.MaxMessageBytes = viper.GetInt("MaximumMessageSize")
 	s.MaxRecipients = viper.GetInt("MaxRecipients")
+	s.EnableSMTPUTF8 = true
 
 	// no authentication required to deliver email
 	s.AuthDisabled = true
@@ -227,6 +229,11 @@ func mailboxView(backend gospam.Backend) func(w http.ResponseWriter, r *http.Req
 			return
 		}
 
+		emails := backend.GetEmailsByAlias(alias)
+		sort.Slice(emails, func(i, j int) bool {
+			return emails[i].Time.After(emails[j].Time)
+		})
+
 		err := mailboxTemplate.Execute(w, struct {
 			Alias          string
 			RandomAlias    string
@@ -238,7 +245,7 @@ func mailboxView(backend gospam.Backend) func(w http.ResponseWriter, r *http.Req
 			RandomAlias:    aliasGenerator(),
 			Domain:         domain,
 			RetentionHours: retentionHours,
-			EMails:         backend.GetEmailsByAlias(alias),
+			EMails:         emails,
 		})
 		if err != nil {
 			log.Printf("ERROR: %s\n", err)
