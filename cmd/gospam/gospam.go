@@ -42,15 +42,27 @@ func main() {
 	ctx, shutdown := context.WithCancel(context.Background())
 	serviceContext := context.WithValue(ctx, contextKey("wg"), servicesWaitGroup)
 
-	// Create an InMemoryBackend to store messages
-	backend := &gospam.InMemoryBackend{
-		MaxStoredMessage: viper.GetInt("MaxStoredMessages"),
-		AcceptedDomains:  viper.GetStringSlice("AcceptedDomains"),
+	var backend gospam.Backend
+	if viper.IsSet("RedisBackend") {
+		backend = gospam.NewRedisBackend(
+			viper.GetString("RedisBackend.Address"),
+			viper.GetString("RedisBackend.Password"),
+			viper.GetInt("RedisBackend.DB"),
+			viper.GetStringSlice("AcceptedDomains"),
+			viper.GetInt("RetentionHours"),
+		)
+	} else {
+		// Create an InMemoryBackend to store messages
+		backend = &gospam.InMemoryBackend{
+			MaxStoredMessage: viper.GetInt("MaxStoredMessages"),
+			AcceptedDomains:  viper.GetStringSlice("AcceptedDomains"),
+		}
+		servicesWaitGroup.Add(1)
+		go mailboxCleanup(serviceContext, backend)
 	}
 
-	servicesWaitGroup.Add(3)
+	servicesWaitGroup.Add(2)
 	go smtpServer(serviceContext, backend)
-	go mailboxCleanup(serviceContext, backend)
 	go webServer(serviceContext, backend)
 
 	<-sigs
@@ -83,7 +95,7 @@ func smtpServer(ctx context.Context, backend gospam.Backend) {
 	s.Close()
 }
 
-func mailboxCleanup(ctx context.Context, backend *gospam.InMemoryBackend) {
+func mailboxCleanup(ctx context.Context, backend gospam.Backend) {
 	defer ctx.Value(contextKey("wg")).(*sync.WaitGroup).Done()
 
 	cleanupInterval := time.NewTicker(time.Duration(viper.GetInt("CleanupPeriod")) * time.Minute)

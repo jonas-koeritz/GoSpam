@@ -1,6 +1,10 @@
 package gospam
 
-import "github.com/emersion/go-smtp"
+import (
+	"time"
+
+	"github.com/emersion/go-smtp"
+)
 
 type Backend interface {
 	smtp.Backend
@@ -9,4 +13,5 @@ type Backend interface {
 	GetProcessedEmails() int
 	GetEmailsByAlias(alias string) []*EMail
 	GetEmailById(id int) *EMail
+	Cleanup(deadline time.Time)
 }

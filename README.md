@@ -26,6 +26,15 @@ RandomAliasPlaceholder: false
 
 `AcceptedDomains` can be omitted to accept any recipient domain, this will make the server look like an open relay.
 
+To add persistence to the service you can optionally supply connection details for a Redis server:
+
+```
+RedisBackend:
+  Address: "127.0.0.1:6379"
+  Password: ""
+  DB: 0
+```
+
 ## Setup
 
 Just run the `gospam` binary.
