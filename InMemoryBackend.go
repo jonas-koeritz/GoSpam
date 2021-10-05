@@ -14,6 +14,7 @@ type InMemoryBackend struct {
 	MaxStoredMessage int
 	mailMutex        sync.Mutex
 	AcceptedDomains  []string
+	AcceptSubdomains bool
 }
 
 func (backend *InMemoryBackend) NewSession(c smtp.ConnectionState, _ string) (smtp.Session, error) {
@@ -95,6 +96,8 @@ func (b *InMemoryBackend) IsAcceptedDomain(email string) bool {
 
 	for _, d := range b.AcceptedDomains {
 		if strings.EqualFold(d, domain) {
+			return true
+		} else if b.AcceptSubdomains && strings.HasSuffix(domain, "."+d) {
 			return true
 		}
 	}

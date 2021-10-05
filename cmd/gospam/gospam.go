@@ -50,6 +50,7 @@ func main() {
 			viper.GetString("RedisBackend.Password"),
 			viper.GetInt("RedisBackend.DB"),
 			viper.GetStringSlice("AcceptedDomains"),
+			viper.GetBool("AcceptSubdomains"),
 			viper.GetInt("RetentionHours"),
 		)
 	} else {
@@ -57,6 +58,7 @@ func main() {
 		backend = &gospam.InMemoryBackend{
 			MaxStoredMessage: viper.GetInt("MaxStoredMessages"),
 			AcceptedDomains:  viper.GetStringSlice("AcceptedDomains"),
+			AcceptSubdomains: viper.GetBool("AcceptSubdomains"),
 		}
 		servicesWaitGroup.Add(1)
 		go mailboxCleanup(serviceContext, backend)
@@ -275,6 +277,7 @@ func readInConfig() error {
 	viper.SetDefault("MaxRecipients", 10)
 	viper.SetDefault("RandomAliasPlaceholder", false)
 	viper.SetDefault("AcceptedDomains", []string{})
+	viper.SetDefault("AcceptSubdomains", false)
 
 	return viper.ReadInConfig()
 }

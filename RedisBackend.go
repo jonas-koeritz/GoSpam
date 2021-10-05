@@ -13,17 +13,19 @@ import (
 )
 
 type RedisBackend struct {
-	client          *redis.Client
-	acceptedDomains []string
-	ctx             context.Context
-	expiration      time.Duration
+	client           *redis.Client
+	acceptedDomains  []string
+	acceptSubdomains bool
+	ctx              context.Context
+	expiration       time.Duration
 }
 
-func NewRedisBackend(addr string, password string, db int, acceptedDomains []string, retentionHours int) Backend {
+func NewRedisBackend(addr string, password string, db int, acceptedDomains []string, acceptSubdomains bool, retentionHours int) Backend {
 	backend := &RedisBackend{
-		acceptedDomains: acceptedDomains,
-		ctx:             context.Background(),
-		expiration:      time.Duration(retentionHours) * time.Hour,
+		acceptedDomains:  acceptedDomains,
+		acceptSubdomains: acceptSubdomains,
+		ctx:              context.Background(),
+		expiration:       time.Duration(retentionHours) * time.Hour,
 	}
 
 	backend.client = redis.NewClient(&redis.Options{
@@ -125,6 +127,8 @@ func (b *RedisBackend) IsAcceptedDomain(email string) bool {
 
 	for _, d := range b.acceptedDomains {
 		if strings.EqualFold(d, domain) {
+			return true
+		} else if b.acceptSubdomains && strings.HasSuffix(domain, "."+d) {
 			return true
 		}
 	}
