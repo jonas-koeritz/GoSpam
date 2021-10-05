@@ -30,7 +30,7 @@
             <table class="ui striped compact table">
                 <thead>
                     <tr>
-                        <th><i class="envelope icon"></i></th>
+                        <th><i class="envelope icon"></i>{{ len .EMails }}</th>
                         <th>Received</th>
                         <th>Envelope Sender</th>
                         <th>Subject</th>
@@ -49,7 +49,7 @@
                     <tr class="accordion content">
                         <td colspan="5">
                             <div class="ui left aligned accordion content">
-                                <pre class="ui secondary segment" style="font-family: monospace; white-space: break-spaces;">{{ ShowMail . }}</pre>
+                                <pre class="ui secondary segment" style="font-family: monospace; white-space: break-spaces; word-wrap: anywhere;">{{ ShowMail . }}</pre>
                                 <div class="ui right aligned">
                                     <a class="ui basic labeled icon button" href="/mail?id={{ .ID }}">
                                         <i class="download icon"></i>

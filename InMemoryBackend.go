@@ -16,14 +16,16 @@ type InMemoryBackend struct {
 	AcceptedDomains  []string
 }
 
-func (backend *InMemoryBackend) NewSession(_ smtp.ConnectionState, _ string) (smtp.Session, error) {
+func (backend *InMemoryBackend) NewSession(c smtp.ConnectionState, _ string) (smtp.Session, error) {
 	return &Session{
+		remote:  c.RemoteAddr,
 		backend: backend,
 	}, nil
 }
 
-func (backend *InMemoryBackend) AnonymousLogin(_ *smtp.ConnectionState) (smtp.Session, error) {
+func (backend *InMemoryBackend) AnonymousLogin(c *smtp.ConnectionState) (smtp.Session, error) {
 	return &Session{
+		remote:  c.RemoteAddr,
 		backend: backend,
 	}, nil
 }

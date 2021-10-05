@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"mime"
+	"net"
 	"net/mail"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 
 type Session struct {
 	backend Backend
+	remote  net.Addr
 	from    string
 	to      []string
 }
@@ -23,13 +25,13 @@ func (s *Session) AuthPlain(username, password string) error {
 }
 
 func (s *Session) Mail(from string, opts smtp.MailOptions) error {
-	log.Printf("Mail from: %s\n", from)
+	log.Printf("MAIL FROM [%s]: %s\n", s.remote.String(), from)
 	s.from = from
 	return nil
 }
 
 func (s *Session) Rcpt(to string) error {
-	log.Printf("Mail to: %s\n", to)
+	log.Printf("RCPT TO [%s]: %s\n", s.remote.String(), to)
 	if !s.backend.IsAcceptedDomain(to) {
 		log.Printf("not in AcceptedDomains\n")
 		return &smtp.SMTPError{
@@ -47,6 +49,7 @@ func (s *Session) Rcpt(to string) error {
 }
 
 func (s *Session) Data(r io.Reader) error {
+	log.Printf("DATA [%s]\n", s.remote.String())
 	if m, err := ioutil.ReadAll(r); err != nil {
 		return err
 	} else {

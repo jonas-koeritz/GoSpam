@@ -34,14 +34,18 @@ func NewRedisBackend(addr string, password string, db int, acceptedDomains []str
 	return backend
 }
 
-func (backend *RedisBackend) AnonymousLogin(_ *smtp.ConnectionState) (smtp.Session, error) {
+func (backend *RedisBackend) AnonymousLogin(c *smtp.ConnectionState) (smtp.Session, error) {
+	log.Printf("Anonymous login from %s\n", c.RemoteAddr.String())
 	return &Session{
+		remote:  c.RemoteAddr,
 		backend: backend,
 	}, nil
 }
 
-func (backend *RedisBackend) NewSession(_ smtp.ConnectionState, _ string) (smtp.Session, error) {
+func (backend *RedisBackend) NewSession(c smtp.ConnectionState, _ string) (smtp.Session, error) {
+	log.Printf("New Session with: %s\n", c.RemoteAddr.String())
 	return &Session{
+		remote:  c.RemoteAddr,
 		backend: backend,
 	}, nil
 }
