@@ -15,6 +15,7 @@ Domain: "localhost"
 AcceptedDomains:
   - "spam4.jonaskoeritz.de"
   - "localhost"
+AcceptSubdomains: false
 MaxStoredMessages: 100000
 RetentionHours: 4
 CleanupPeriod: 5
