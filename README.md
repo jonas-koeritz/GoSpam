@@ -2,6 +2,15 @@
 
 Simple selfhosted throw-away email
 
+## Screenshots
+
+### Welcome / Mailbox search
+![Welcome View](/screenshots/gospam_welcome.png)
+
+### E-Mail Details
+![E-Mail Details View](/screenshots/gospam_email.png)
+
+
 ## Configuration
 
 GoSpam supports various configuration options. All options with their respective defaults are listed below.
