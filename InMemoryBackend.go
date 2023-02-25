@@ -17,21 +17,21 @@ type InMemoryBackend struct {
 	AcceptSubdomains bool
 }
 
-func (backend *InMemoryBackend) NewSession(c smtp.ConnectionState, _ string) (smtp.Session, error) {
+func (backend *InMemoryBackend) NewSession(c *smtp.Conn) (smtp.Session, error) {
 	return &Session{
-		remote:  c.RemoteAddr,
+		remote:  c.Conn().RemoteAddr(),
 		backend: backend,
 	}, nil
 }
 
-func (backend *InMemoryBackend) AnonymousLogin(c *smtp.ConnectionState) (smtp.Session, error) {
+func (backend *InMemoryBackend) AnonymousLogin(c *smtp.Conn) (smtp.Session, error) {
 	return &Session{
-		remote:  c.RemoteAddr,
+		remote:  c.Conn().RemoteAddr(),
 		backend: backend,
 	}, nil
 }
 
-func (backend *InMemoryBackend) Login(_ *smtp.ConnectionState, username, password string) (smtp.Session, error) {
+func (backend *InMemoryBackend) Login(_ *smtp.Conn, username, password string) (smtp.Session, error) {
 	return nil, smtp.ErrAuthUnsupported
 }
 

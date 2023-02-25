@@ -24,7 +24,7 @@ func (s *Session) AuthPlain(username, password string) error {
 	return smtp.ErrAuthUnsupported
 }
 
-func (s *Session) Mail(from string, opts smtp.MailOptions) error {
+func (s *Session) Mail(from string, opts *smtp.MailOptions) error {
 	log.Printf("MAIL FROM [%s]: %s\n", s.remote.String(), from)
 	s.from = from
 	return nil

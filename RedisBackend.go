@@ -36,18 +36,18 @@ func NewRedisBackend(addr string, password string, db int, acceptedDomains []str
 	return backend
 }
 
-func (backend *RedisBackend) AnonymousLogin(c *smtp.ConnectionState) (smtp.Session, error) {
-	log.Printf("Anonymous login from %s\n", c.RemoteAddr.String())
+func (backend *RedisBackend) AnonymousLogin(c *smtp.Conn) (smtp.Session, error) {
+	log.Printf("Anonymous login from %s\n", c.Conn().RemoteAddr().String())
 	return &Session{
-		remote:  c.RemoteAddr,
+		remote:  c.Conn().RemoteAddr(),
 		backend: backend,
 	}, nil
 }
 
-func (backend *RedisBackend) NewSession(c smtp.ConnectionState, _ string) (smtp.Session, error) {
-	log.Printf("New Session with: %s\n", c.RemoteAddr.String())
+func (backend *RedisBackend) NewSession(c *smtp.Conn) (smtp.Session, error) {
+	log.Printf("New Session with: %s\n", c.Conn().RemoteAddr().String())
 	return &Session{
-		remote:  c.RemoteAddr,
+		remote:  c.Conn().RemoteAddr(),
 		backend: backend,
 	}, nil
 }
@@ -136,7 +136,7 @@ func (b *RedisBackend) IsAcceptedDomain(email string) bool {
 	return false
 }
 
-func (backend *RedisBackend) Login(_ *smtp.ConnectionState, username, password string) (smtp.Session, error) {
+func (backend *RedisBackend) Login(_ *smtp.Conn, username, password string) (smtp.Session, error) {
 	return nil, smtp.ErrAuthUnsupported
 }
 
