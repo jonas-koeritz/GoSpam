@@ -15,3 +15,15 @@ $('.accordion.title').on("click", function(e) {
     });
   }
 });
+
+$('#copy-alias').on("click", function(e) {
+  $('#copy-icon').removeClass("copy");
+    $('#copy-icon').addClass("check");
+  setTimeout(function() {
+    $('#copy-icon').addClass("copy");
+    $('#copy-icon').removeClass("check");
+  }, 500);
+  
+  navigator.clipboard.writeText($('#alias').val() + $('#domain').text());
+  return false;
+});

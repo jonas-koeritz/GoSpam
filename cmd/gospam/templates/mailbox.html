@@ -20,8 +20,9 @@
             <form method="GET" action="/mailbox">
                 <div class="ui item action input labeled input">
                     <label for="alias" class="ui label">Show mailbox</label>
-                    <input type="text" name="alias" id="alias" style="text-align: right;" placeholder="{{ .RandomAlias }}">
-                    <button type="submit" class="ui button">@{{ .Domain }}</button>
+                    <input type="text" name="alias" id="alias" style="text-align: right;" placeholder="{{ .RandomAlias }}" value="{{ .Alias }}">
+                    <button id="domain" type="submit" class="ui button">@{{ .Domain }}</button>
+                    <button class="ui icon button" title="Copy Alias" id="copy-alias"><i id="copy-icon" class="copy icon"></i></button>
                 </div>
             </form>
         </div>
@@ -67,10 +68,6 @@
         <div class="ui center aligned container" style="margin-top: 50px;">
             <div class="ui item message">E-Mail messages will be deleted after <b>{{ .RetentionHours }}</b> hours.</div>
         </div>
-       
-
-        
-
         
         <script src="./static/mailbox.js"></script>
     </body>

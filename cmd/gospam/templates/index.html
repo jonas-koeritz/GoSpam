@@ -19,7 +19,8 @@
                 <div class="ui item action input labeled input">
                     <label for="alias" class="ui label">Show mailbox</label>
                     <input type="text" name="alias" id="alias" style="text-align: right;" placeholder="{{ .RandomAlias }}">
-                    <button type="submit" class="ui button">@{{ .Domain }}</button>
+                    <button id="domain" type="submit" class="ui button">@{{ .Domain }}</button>
+                    <button class="ui icon button" title="Copy Alias" id="copy-alias"><i id="copy-icon" class="copy icon"></i></button>
                 </div>
             </form>
         </div>
@@ -30,5 +31,7 @@
                 <div style="margin-top: 20px;">Processed <b>{{ .ProcessedEmails }}</b> emails and counting...</div>
             </div>
         </div>
+
+        <script src="./static/mailbox.js"></script>
     </body>
 </html>
