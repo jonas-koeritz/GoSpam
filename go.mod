@@ -3,16 +3,16 @@ module github.com/jonas-koeritz/gospam
 go 1.20
 
 require (
-	github.com/emersion/go-smtp v0.16.0
+	github.com/emersion/go-smtp v0.24.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/spf13/viper v1.8.1
 	github.com/tjarratt/babble v0.0.0-20210505082055-cbca2a4833c1
 )
 
 require (
-	github.com/cespare/xxhash/v2 v2.2.0 // indirect
+	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
-	github.com/emersion/go-sasl v0.0.0-20220912192320-0145f2c60ead // indirect
+	github.com/emersion/go-sasl v0.0.0-20241020182733-b788ff22d5a6 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect

@@ -30,7 +30,7 @@ func (s *Session) Mail(from string, opts *smtp.MailOptions) error {
 	return nil
 }
 
-func (s *Session) Rcpt(to string) error {
+func (s *Session) Rcpt(to string, opts *smtp.RcptOptions) error {
 	log.Printf("RCPT TO [%s]: %s\n", s.remote.String(), to)
 	if !s.backend.IsAcceptedDomain(to) {
 		log.Printf("not in AcceptedDomains\n")
@@ -81,6 +81,11 @@ func (s *Session) Data(r io.Reader) error {
 	}
 
 	return nil
+}
+
+// We don't do any authentication at all
+func (s *Session) AuthMechanisms() []string {
+	return []string{}
 }
 
 func (s *Session) Reset() {

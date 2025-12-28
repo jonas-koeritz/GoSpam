@@ -83,12 +83,11 @@ func smtpServer(ctx context.Context, backend gospam.Backend) {
 	s.Domain = viper.GetString("Domain")
 	s.ReadTimeout = time.Duration(viper.GetInt("SMTPTimeout")) * time.Second
 	s.WriteTimeout = time.Duration(viper.GetInt("SMTPTimeout")) * time.Second
-	s.MaxMessageBytes = viper.GetInt("MaximumMessageSize")
+	s.MaxMessageBytes = viper.GetInt64("MaximumMessageSize")
 	s.MaxRecipients = viper.GetInt("MaxRecipients")
 	s.EnableSMTPUTF8 = true
 
 	// no authentication required to deliver email
-	s.AuthDisabled = true
 	s.AllowInsecureAuth = false
 
 	log.Printf("starting SMTP server at %s\n", s.Addr)
